@@ -42,3 +42,117 @@ echo '$name'
 在""内的\$变量的格式是可以正常使用的,不过在''中的内容会保持其原有的内容输出
 
 ![2](https://update-image.oss-cn-shanghai.aliyuncs.com/macUpload/20190812002306.png)
+
+# 函数简介
+```shell
+get_name() {
+  echo "clwater"
+}
+
+get_name
+
+echo "You are $(get_name)"
+echo "You are `get_name`"
+
+result=$(get_name)
+echo "result: $result"
+```
+
+输出结果:
+
+![3](https://update-image.oss-cn-shanghai.aliyuncs.com/macUpload/20190812224850.png)
+
+我们可以通过
+```shell
+functionName() {
+    ...
+}
+```
+这样的形式来定义一个函数(如何穿参参考后面函数部分),调用的时候也是否的简洁,直接调用相关的函数名即可,除此之外可以通过以下方法获取此函数的返回值
+
+```shell
+$(functionName)
+`functionName`
+```
+
+故此我们可以把返回值存起来以便后面的使用
+
+shell的函数只能返回一个string类型的字符串,shell中没有我们平常使用的return关键字,使用的是echo输出的内容作为其函数的返回值,具体相关的在后面的函数中详细的介绍
+
+# 状态码
+在shell中,我们常常需要知道上一次的命令执行是否成功来决定下一步怎样执行
+
+```shell
+result=$(cd ~/ 2>&1)
+echo "cd ~/ status $?"  --> 0
+result=$(cd ~/errorPath 2>&1)
+echo "cd ~/errorPath status $?" --> 1
+```
+
+2>&1的作用是一直重定向的功能,可以把错误输出定向为标准输出(这里的作用是 把cd操作错误的情况定位为返回值的输出)
+
+$?的作用是获取上一个命令的状态码,当状态码为0的时候,说明上次的指令是成功执行的,非0的情况说明上次的指令没有成功执行
+
+
+# 条件执行 &&和||
+```shell
+cd ~ && pwd
+cd ~/errorPath || echo "cd error"
+```
+![4](https://update-image.oss-cn-shanghai.aliyuncs.com/macUpload/20190812231632.png)
+
+&&是在前一个命令执行成功(状态码为0)的情况下执行后面的命令
+
+||是在前一个命令执行失败的(状态码非0)的情况下执行后面的命令
+
+(这里没有使用2>&1之类的重定向,所以报错信息会被输出到控制台)
+
+# 条件控制
+
+```shell
+name="clwater"
+if [[ name == "clwater" ]]; then
+  echo "Hi, $clwater"
+else
+  echo "Hi, new friends"
+fi
+```
+
+可以通过
+```shell
+if [[ 判断条件 ]]; then
+    ...
+fi
+```
+的形式来实现一个if判断(详情可以参考下后面的条件控制相关内容)
+
+# 花括号展开
+```shell
+echo {1..5}
+echo {A,B}
+echo {1,3}{A..C}
+echo {{1..3},{A,C}}
+
+name='clwater'
+echo {a,b}$name
+```
+
+![5](https://update-image.oss-cn-shanghai.aliyuncs.com/macUpload/20190812234958.png)
+
+
+在{}中设置其展开的内容,其中','为选择,'..'为范围,花括号展开在整个shell中具有最高的优先级
+
+
+# 严格模式
+
+``` shell
+set -euo pipefail
+IFS=$'\n\t'
+
+error1
+error2
+error3
+```
+![6](https://update-image.oss-cn-shanghai.aliyuncs.com/macUpload/20190812235827.png)
+
+我们可以看到,在使用严格模式的情况下,如果命令出现任意错误,都会报错并停止执行,而不使用严格模式的情况下,即使命令出现错误了  也继续执行下去
